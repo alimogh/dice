@@ -36,11 +36,11 @@ $('.betContainer').html('<center><div class="inputBox">' +
     '<div style="float: right;">Wagered = <span id="wagered">0.00000000</span></div><br> ' +
     '<center>Largest Bet = <span id="largestbetAmount">0.00000000</span><br>' +
     ' Bet = <span id="bet">0</span> Win = <span id="win">0</span>  Lose = <span id="lose">0</span></center> ' +
-    '<div style="float: left;">Win Streak = <span id="winStreak">0</span></div> ' +
-    '<div style="float: right;">Lose Streak = <span id="loseStreak">0</span></div><br> ' +
-    '<div style="float: left;">Max Win Streak = <span id="maxWinStreak">0</span></div> ' +
-    '<div style="float: right;">Max Lose Streak = <span id="maxLoseStreak">0</span></div><br> ' +
-    '<div style="float: left;">Balance lose = <span id="balancelose">0</span></div> </div>');
+    '<div>Win Streak = <span id="winStreak">0</span></div> ' +
+    '<div>Lose Streak = <span id="loseStreak">0</span></div><br> ' +
+    '<div>Max Win Streak = <span id="maxWinStreak">0</span></div> ' +
+    '<div>Max Lose Streak = <span id="maxLoseStreak">0</span></div><br> ' +
+    '<div>Balance lose = <span id="balancelose">0</span></div> </div>');
 $('.betContainer').css('font-size', '16px');
 $('.betContainer').css('color', '#fff');
 $('.coin').css('background', 'none');
