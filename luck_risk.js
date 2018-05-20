@@ -16,6 +16,8 @@ $('.btn.gray').css('color', '#949494');
 $('.btn.gray').css('float', 'right');
 $('.inputBox input:read-only, .textBox textarea:read-only').css('color', '#ffffff');
 $('.inputBox .label, .textBox .label, .selectBox .label').css('color', '#ffffff');
+$('#controlContainer input[type=text]:read-only').css('color', '#ffffff');
+$('.inputBox input, .textBox .textarea, .textBox textarea, .radioBox input[type=text]').css('background', 'none');
 $('.inputBox input, .textBox .textarea, .textBox textarea, .radioBox input[type=text]').css('background', '#ffffff');
 $('.inputBox input, .textBox .textarea, .textBox textarea, .radioBox input[type=text]').css('border', '1px #ffffff solid');
 $('.inputBox .label, .textBox .label, .selectBox .label').css('color', '#ffffff');
@@ -24,7 +26,7 @@ $('#controlContainer .coinContainer a.active .coin span, #controlContainer .coin
 // $('.balanceContainer').css('border', 'none');
 $('.betContainer').html('<center><div class="inputBox">' +
     '<input type="number" id="betAmount" value="0.00000001" style="color: #fff; background: none; text-align: center; width="50%; float: left;"> ' +
-    // '<input type="number" id="underBalance" style="color: #fff; background: none; text-align: center; width="50%; float: right;"><br> ' +
+    '<input type="number" placeholder="Target Profit %" id="target" value="100" style="text-align: center; width="50%; float: right;"><br> ' +
     '<button class="btn green" id="startBot" onclick="startBot();">Start BOT</button> ' +
     '<button class="btn red" id="stopBot" onclick="stopBot();">Stop BOT</button> ' +
     '<button class="btn gray" id="resetBot" onclick="resetBot();">Reset BOT</button><br> ' +
@@ -37,11 +39,11 @@ $('.betContainer').html('<center><div class="inputBox">' +
     '<div style="float: right;">Wagered = <span id="wagered">0.00000000</span></div><br> ' +
     '<center>Largest Bet = <span id="largestbetAmount">0.00000000</span><br>' +
     ' Bet = <span id="bet">0</span> Win = <span id="win">0</span>  Lose = <span id="lose">0</span></center> ' +
-    '<div>Win Streak = <span id="winStreak">0</span></div> ' +
-    '<div>Lose Streak = <span id="loseStreak">0</span></div><br> ' +
-    '<div>Max Win Streak = <span id="maxWinStreak">0</span></div> ' +
-    '<div>Max Lose Streak = <span id="maxLoseStreak">0</span></div><br> ' +
-    '<div>Balance lose = <span id="balancelose">0</span></div> </div>');
+    '<div style="float: left;">Win Streak = <span id="winStreak">0</span></div> ' +
+    '<div style="float: right;">Lose Streak = <span id="loseStreak">0</span></div><br> ' +
+    '<div style="float: left;">Max Win Streak = <span id="maxWinStreak">0</span></div> ' +
+    '<div style="float: right;">Max Lose Streak = <span id="maxLoseStreak">0</span></div><br> ' +
+    '<div style="float: left;">Balance lose = <span id="balancelose">0</span></div> </div>');
 $('.betContainer').css('font-size', '16px');
 $('.betContainer').css('color', '#fff');
 $('.coin').css('background', 'none');
@@ -56,7 +58,7 @@ $('#frontText').css('display', 'none');
 $('#footer').css('display', 'none');
 $('#log').css('background', 'none');
 $('#log').css('overflow', 'auto');
-$('#log').css('width', '38%');
+$('#log').css('width', '40%');
 $('#log').css('height', '293px');
 $('#log').css('text-align', 'center');
 $('#log').css('float', 'right');
@@ -70,12 +72,13 @@ log('BOT has applied!');
 document.getElementById('static').hidden = true;
 let startbalance = parseFloat($('#balance').val()),
     onBalance = 0,
-    basebetAmount = parseFloat($('#betAmount').val()),
+    basebetAmount = $('#betAmount').val(),
     betAmount = basebetAmount,
     largestbetAmount = 0,
     largesBalance = startbalance,
     direction = (Math.floor(Math.random() * 100) + 1) % 2===0 ? 'over' : 'under',
     prediction = defaultChange(),
+    target = parseFloat($('#target').val()) * startbalance / 100,
     wagered = 0,
     profit = 0,
     largestProfit = 0,
@@ -102,7 +105,7 @@ let startbalance = parseFloat($('#balance').val()),
     playHour = 0,
     playMinute = 0,
     playSecond = 0,
-    chanceGo = {min: 10, max: 80},
+    chanceGo = {min: 30, max: 97},
     listGameGo = [],
     balancelose = 0,
     golandau = 0,
@@ -126,16 +129,16 @@ function createChange () {
             hi: {
                 game: parseFloat((100-i-0.01)).toFixed(0),
                 risk: getPayoutForMulti * 10 + ((getPayoutForMulti * 10) * 20 / 100),
-                change: i.toFixed(0),
+                change: i.toFixed(2),
                 lose: 0,
                 direction: 'over',
                 tilethang: 0,
                 onlose: 1 / (1 * getPayoutForMulti - 1) * 120
             },
             low: {
-                game: parseFloat(i).toFixed(2),
+                game: parseFloat(i).toFixed(0),
                 risk: getPayoutForMulti * 10 + ((getPayoutForMulti * 10) * 20 / 100),
-                change: i.toFixed(0),
+                change: i.toFixed(2),
                 lose: 0,
                 direction: 'under',
                 tilethang: 0,
@@ -174,35 +177,33 @@ function getGoChange(){
     let phantram = 0;
     listGameGo.forEach(function (item) {
         ['hi', 'low'].forEach(function (condition) {
-            if (item[condition].tilethang >= 20 && item[condition].tilethang <= 25){
+            if (item[condition].tilethang >= 20 && item[condition].tilethang <= 23) {
                 phantram = item[condition].tilethang;
                 infobet.change = item[condition].change;
                 infobet.direction = item[condition].direction;
                 infobet.onlose = item[condition].onlose;
                 infobet.tilethang = item[condition].tilethang;
-            }else if(item[condition].tilethang >= 10 && item[condition].tilethang <= 20){
-                phantram = item[condition].tilethang;
-                infobet.change = item[condition].change;
-                infobet.direction = item[condition].direction;
-                infobet.onlose = item[condition].onlose;
-                infobet.tilethang = item[condition].tilethang;
+                infobet.game = item[condition].game;
+                infobet.lose = item[condition].lose;
             }else if(item[condition].tilethang >= phantram){
                 phantram = item[condition].tilethang;
                 infobet.change = item[condition].change;
                 infobet.direction = item[condition].direction;
                 infobet.onlose = item[condition].onlose;
                 infobet.tilethang = item[condition].tilethang;
+                infobet.game = item[condition].game;
+                infobet.lose = item[condition].lose;
             }
         });
     });
     return infobet;
 }
 function updateChange(gameStatus, amount_return) {
+    if(balancelose > 0){
+        balancelose = -(1 * onBalance / 100);
+    }
     if(golandau <= 0){
         golandau = 1;
-    }
-    if (balancelose > 0){
-        balancelose = 0;
     }
     if(gameStatus === 'win'){
         if(balancelose < 0 && flagGo){
@@ -220,27 +221,37 @@ function updateChange(gameStatus, amount_return) {
         flagGo = true;
         flagNormal = false;
         let getPayoutGo = getPayout(goChance.change);
-        if (goChance.tilethang >= 20 && goChance.tilethang <= 25){
+        if (goChance.tilethang >= 20 && goChance.tilethang <= 23){
+            getBackPrice = bet + currentBackPrice;
             if(Math.abs(balancelose) / largesBalance * 100 < 1){
                 betAmount = Math.abs(balancelose) / (getPayoutGo - 1);
             }else{
                 betAmount = Math.abs(balancelose) / 100 / (getPayoutGo - 1)
             }
-            prediction = goChance.change;
             direction = goChance.direction;
-        }else if(goChance.tilethang >= 10 && goChance.tilethang <= 20){
-            getBackPrice = bet + currentBackPrice;
-            betAmount = Math.abs(balancelose) / golandau / (getPayoutGo - 1);
-            if(betAmount / onBalance * 100 > 10){
-                betAmount = 10 * onBalance / 100;
+            prediction = goChance.game;
+        }else if(goChance.lose >= 2 && goChance.lose <= 4){
+            if(balancelose < 0){
+                betAmount = Math.abs(balancelose) / 10;
             }
+            betAmount = betAmount + betAmount * goChance.onlose / 100;
             golandau--;
-            prediction = 98 - goChance.change;
             direction = goChance.direction === 'over' ? 'under' : 'over';
-        }else{
-            betAmount = Math.abs(balancelose) / 100 / (getPayoutGo - 1);
             prediction = 98 - goChance.change;
+            if(direction === 'over'){
+                prediction = parseFloat((98-prediction)).toFixed(0);
+            }else{
+                prediction = parseFloat(prediction).toFixed(0);
+            }
+        } else{
+            betAmount = basebetAmount;
             direction = goChance.direction === 'over' ? 'under' : 'over';
+            prediction = 98 - goChance.change;
+            if(direction === 'over'){
+                prediction = parseFloat((98-prediction)).toFixed(0);
+            }else{
+                prediction = parseFloat(prediction).toFixed(0);
+            }
         }
     }else{
         flagGo = false;
@@ -271,7 +282,7 @@ $.getScript('//dicegametool.com/public/js/canvasjs.min.js')
                 title: "Profit",
                 includeZero: false,
             },
-            title: { text: 'Bot Luckygames by Trương Triệu Luân Base on code Mai hoàng quốc bảo improvisation Themes by Hữu Hà EtherFact', fontSize: 16 },
+            title: { text: 'BOT Luckygames by Trương Triệu Luân Base on code Mai hoàng quốc bảo Risk Themes by Hữu Hà EtherFact', fontSize: 16 },
             data: [{ type: 'stepLine', dataPoints: dps }]
         });
         chart.render();
@@ -314,20 +325,25 @@ function startBot() {
     betAmount = basebetAmount;
     startbalance = parseFloat($('#balance').val());
     largesBalance = startbalance;
+    target = parseFloat($('#target').val()) * startbalance / 100;
     runBot();
 }
 function stopBot() {
     run = false;
 }
 function defaultChange() {
-    return randomNumberFromRange(40, 66);
+    return randomNumberFromRange(1, 5);
 }
 function randomNumberFromRange(min,max){
     let rdChange = parseFloat(Math.random()*(max-min)+min).toFixed(0);
     if(rdChange === 0){
         PlayGame.randomNumberFromRange(min, max);
     }else{
-        return rdChange;
+        if(direction === 'over'){
+            return parseFloat((98-rdChange)).toFixed(0);
+        }else{
+            return parseFloat(rdChange).toFixed(0);
+        }
     }
 }
 function resetBot() {
@@ -422,6 +438,9 @@ function runBot() {
                     $('#wagered').html(wagered.toFixed(8));
                     $('#balancelose').html(balancelose.toFixed(8));
                     updateChart(bet, profit, color);
+                    if(profit >= target){
+                        stopBot();
+                    }
                     runBot();
                 }
             },
